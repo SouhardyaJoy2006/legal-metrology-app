@@ -4,10 +4,12 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Compliance Report — {{ scan.product_name }}</h2>
     <div>
+        <!-- NEW: PDF Download Button -->
         {% if scan.compliance_report %}
             <a href="{{ url_for('download_pdf', id=scan.id) }}" class="btn btn-primary me-2">Download PDF Report</a>
         {% endif %}
-        <a href="{{ url_for('officer_dashboard') }}" class="btn btn-outline-secondary">&larr; Back to Dashboard</a>
+        <!-- UPDATED: Dynamic back button so it works for both Suppliers and Officers -->
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">&larr; Back</a>
     </div>
 </div>
 
@@ -63,11 +65,14 @@
                     {% endif %}
                 {% endif %}
 
-                <form method="POST" action="{{ url_for('rerun_scan', id=scan.id) }}">
+                <!-- UPDATED: Only allow Officers to trigger a re-run -->
+                {% if current_user.role == 'officer' %}
+                <form method="POST" action="{{ url_for('rerun_scan', id=scan.id) }}" class="mt-3">
                     <button type="submit" class="btn btn-sm btn-outline-primary w-100">
                         Re-run AI Analysis
                     </button>
                 </form>
+                {% endif %}
             </div>
         </div>
     </div>

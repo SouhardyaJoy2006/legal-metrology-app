@@ -1,0 +1,20 @@
+# BIS Indian Standards RAG Backend — Python dependencies
+#
+# Install with:
+#   pip install -r requirements_bis_rag.txt
+#
+# NOTE: This file is separate from Data_Extractor/requirement.txt
+#       which covers the CLIP/OCR subsystem.
+
+# PostgreSQL 18 driver with binary support (async-capable, psycopg v3)
+psycopg[binary]>=3.1,<4.0
+
+# pgvector Python adapter for psycopg v3
+# Registers the vector type so psycopg can read/write embeddings.
+pgvector>=0.3,<1.0
+
+# Load environment variables from .env files
+python-dotenv>=1.0,<2.0
+
+# Testing
+pytest>=8.0,<9.0

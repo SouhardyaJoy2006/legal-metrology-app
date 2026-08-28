@@ -9,6 +9,16 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
+import sys
+from pathlib import Path
+
+# Add PS_108 to sys.path for importing bis_rag module.
+# In this repo PS_108 lives as a sibling folder at the project root
+# (alongside main.py), so parent (not parent.parent) is correct here.
+_ps108_path = Path(__file__).parent / "PS_108"
+if _ps108_path.exists() and str(_ps108_path) not in sys.path:
+    sys.path.insert(0, str(_ps108_path))
+
 from dotenv import load_dotenv
 from time import time
 from fpdf import FPDF
@@ -552,6 +562,54 @@ def hidden_dev_gateway():
             flash("Email not authorized for developer access.")
             
     return render_template("dev_gateway.html", form=form)
+
+
+# ----- PS-108 BIS Standards Recommendation Routes ------- #
+@app.route("/bis_standards", methods=["GET"])
+def bis_standards():
+    """Renders the standalone BIS Standards Recommendation Engine webpage."""
+    return render_template("bis_standards.html")
+
+
+@app.route("/api/standards/search", methods=["POST"])
+def api_search_standards():
+    """REST API endpoint for hybrid semantic retrieval of BIS standards."""
+    try:
+        data = request.get_json() or {}
+        query = (data.get("query") or "").strip()
+        top_k = int(data.get("top_k") or 8)
+        include_superseded = bool(data.get("include_superseded", True))
+        dept_filter = (data.get("department") or "").strip().lower()
+        type_filter = (data.get("type_of_standard") or "").strip().lower()
+
+        if not query:
+            return {"error": "Query parameter is required."}, 400
+
+        from bis_rag.retrieval import search_standards
+
+        raw_results = search_standards(
+            query=query,
+            top_k=top_k * 2 if (dept_filter or type_filter) else top_k,
+            retrieval_k=30,
+            include_superseded=include_superseded,
+        )
+
+        filtered = []
+        for r in raw_results:
+            if dept_filter and dept_filter not in (r.get("department") or "").lower():
+                continue
+            if type_filter and type_filter not in (r.get("type_of_standard") or "").lower():
+                continue
+            filtered.append(r)
+            if len(filtered) >= top_k:
+                break
+
+        return {"query": query, "count": len(filtered), "results": filtered}
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return {"error": str(exc)}, 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)

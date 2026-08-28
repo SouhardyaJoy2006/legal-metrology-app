@@ -30,8 +30,10 @@
                         <tr>
                             <th>Product Name</th>
                             <th>Brand</th>
-                            <th>Status</th>
+                            <th>Label Image</th>
+                            <th>Product Image</th>
                             <th>Model Output Image</th>
+                            <th>Status</th>
                             <th>Compliance Report</th>
                         </tr>
                     </thead>
@@ -40,6 +42,19 @@
                         <tr>
                             <td>{{ scan.product_name }}</td>
                             <td>{{ scan.brand }}</td>
+                            <td>
+                                <a href="{{ scan_image_url(scan.image_filename) }}" target="_blank" class="btn btn-sm btn-outline-secondary">View Label</a>
+                            </td>
+                            <td>
+                                <a href="{{ scan_image_url(scan.product_image_filename) }}" target="_blank" class="btn btn-sm btn-outline-secondary">View Product</a>
+                            </td>
+                            <td>
+                                {% if scan.result_image %}
+                                    <a href="{{ scan_image_url(scan.result_image) }}" target="_blank" class="btn btn-sm btn-outline-info">View Bounding Boxes</a>
+                                {% else %}
+                                    <span class="text-muted small">Processing...</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if scan.status == 'Pending Analysis' %}
                                     <span class="badge bg-warning text-dark">{{ scan.status }}</span>
@@ -50,17 +65,11 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if scan.result_image %}
-                                    <a href="{{ scan_image_url(scan.result_image) }}" target="_blank" class="btn btn-sm btn-outline-info">View Bounding Boxes</a>
-                                {% else %}
-                                    <span class="text-muted small">Processing...</span>
-                                {% endif %}
-                            </td>
-                            <td>
                                 {% if scan.compliance_report %}
+                                    <!-- Updated to properly download the PDF -->
                                     <a href="{{ url_for('download_pdf', id=scan.id) }}" class="btn btn-sm btn-primary">Download PDF Report</a>
                                 {% else %}
-                                    <span class="text-muted small">N/A</span>
+                                    <span class="text-muted small">Analysis Pending</span>
                                 {% endif %}
                             </td>
                         </tr>

@@ -37,3 +37,12 @@ Pillow
 requests
 vercel_blob
 fpdf
+
+# --- PS-108 BIS Standards Engine (bis_rag) ---
+# Requires a PostgreSQL database with the pgvector extension enabled
+# (e.g. Supabase, Neon, or Vercel Postgres). Set POSTGRES_HOST,
+# POSTGRES_PORT, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD as env vars.
+# The standards data must also be loaded/embedded into that database using
+# the scripts in PS_108/scripts/ before /bis_standards will return results.
+psycopg[binary]>=3.1,<4.0
+pgvector>=0.3,<1.0

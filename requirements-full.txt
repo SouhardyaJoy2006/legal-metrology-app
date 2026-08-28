@@ -42,3 +42,8 @@ Pillow
 requests
 vercel_blob
 fpdf
+
+# --- PS-108 BIS Standards Engine (bis_rag) ---
+# Same requirements as requirements.txt — see notes there.
+psycopg[binary]>=3.1,<4.0
+pgvector>=0.3,<1.0
