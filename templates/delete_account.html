@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card form-card shadow-sm mt-5 border-danger">
+            <div class="card-header bg-danger text-white text-center py-3">
+                <h4 class="mb-0">Delete Account</h4>
+            </div>
+            <div class="card-body p-4 text-center">
+                <h5 class="card-title text-danger mb-3">Warning: This action is permanent!</h5>
+                <p class="card-text text-muted mb-4">
+                    Are you sure you want to delete your account? This will permanently erase your profile and <strong>all</strong> of your uploaded label scans and compliance reports from the system. This action cannot be undone.
+                </p>
+                
+                <form method="POST" action="{{ url_for('delete_account') }}">
+                    <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                        <a href="javascript:history.back()" class="btn btn-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4">Yes, Delete My Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>System Admin Terminal</h2>
+    <span class="badge bg-dark fs-6">Developer Access</span>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card shadow-sm border-info border-start border-4">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-1">Total System Users</h6>
+                <h3 class="mb-0">{{ users|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card shadow-sm border-success border-start border-4">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-1">Total Scans Processed</h6>
+                <h3 class="mb-0">{{ total_scans }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Management Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0">Registered Users Directory</h5>
+    </div>
+    <div class="card-body">
+        {% if users %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td><strong>{{ user.name }}</strong></td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.phone }}</td>
+                            <td>
+                                {% if user.role == 'developer' %}
+                                    <span class="badge bg-dark">{{ user.role|title }}</span>
+                                {% elif user.role == 'officer' %}
+                                    <span class="badge bg-primary">{{ user.role|title }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ user.role|title }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">No users found in the database.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold text-body-emphasis">Automated Legal Metrology Compliance</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">Upload and scan packaged commodity labels to automatically assess compliance with the Legal Metrology (Packaged Commodities) Rules, 2011.</p>
+        {% if not current_user.is_authenticated %}
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="{{ url_for('sign_up') }}" class="btn btn-primary btn-lg px-4 gap-3">Register Now</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

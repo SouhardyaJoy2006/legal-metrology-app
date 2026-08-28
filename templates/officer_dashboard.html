@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Enforcement Dashboard</h2>
+    <a href="{{ url_for('officer_upload') }}" class="btn btn-success">+ Scan New Product</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form method="GET" action="{{ url_for('officer_dashboard') }}" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by product name..." value="{{ search_query }}">
+                    <button type="submit" class="btn btn-outline-primary">Search</button>
+                    {% if search_query %}
+                        <a href="{{ url_for('officer_dashboard') }}" class="btn btn-outline-secondary ms-2">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <h5 class="card-title mb-3">Your Investigated Products</h5>
+        
+        {% if scans %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Brand</th>
+                            <th>Assigned Supplier</th>
+                            <th>Label Image</th>
+                            <th>Product Image</th> <!-- NEW -->
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in scans %}
+                        <tr>
+                            <td>{{ scan.product_name }}</td>
+                            <td>{{ scan.brand }}</td>
+                            <td>{{ scan.supplier.name }}</td>
+                            <td>
+                                <!-- Label Image -->
+                                <a href="{{ scan_image_url(scan.image_filename) }}" target="_blank" class="btn btn-sm btn-outline-secondary">View Label</a>
+                            </td>
+                            <td>
+                                <!-- Product Image -->
+                                <a href="{{ scan_image_url(scan.product_image_filename) }}" target="_blank" class="btn btn-sm btn-outline-secondary">View Product</a>
+                            </td>
+                            <td>
+                                {% if scan.status == 'Pending Analysis' %}
+                                    <span class="badge bg-warning text-dark">{{ scan.status }}</span>
+                                {% elif scan.status == 'Compliant' %}
+                                    <span class="badge bg-success">{{ scan.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ scan.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if scan.compliance_report %}
+                                    <a href="{{ url_for('view_scan', id=scan.id) }}" class="btn btn-sm btn-primary">Review Report</a>
+                                {% else %}
+                                    <a href="{{ url_for('view_scan', id=scan.id) }}" class="btn btn-sm btn-outline-secondary">No Report Yet</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            {% if search_query %}
+                <p class="text-muted">No investigations found matching "<strong>{{ search_query }}</strong>".</p>
+            {% else %}
+                <p class="text-muted">You have not uploaded any labels for compliance checking yet.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

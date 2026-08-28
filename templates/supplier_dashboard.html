@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Supplier Dashboard</h2>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        
+        <!-- Search Bar Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form method="GET" action="{{ url_for('supplier_dashboard') }}" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by product name..." value="{{ search_query }}">
+                    <button type="submit" class="btn btn-outline-primary">Search</button>
+                    {% if search_query %}
+                        <a href="{{ url_for('supplier_dashboard') }}" class="btn btn-outline-secondary ms-2">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <h5 class="card-title mb-3">Your Compliance Reports</h5>
+        
+        {% if scans %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Brand</th>
+                            <th>Status</th>
+                            <th>Model Output Image</th>
+                            <th>Compliance Report</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in scans %}
+                        <tr>
+                            <td>{{ scan.product_name }}</td>
+                            <td>{{ scan.brand }}</td>
+                            <td>
+                                {% if scan.status == 'Pending Analysis' %}
+                                    <span class="badge bg-warning text-dark">{{ scan.status }}</span>
+                                {% elif scan.status == 'Compliant' %}
+                                    <span class="badge bg-success">{{ scan.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ scan.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if scan.result_image %}
+                                    <a href="{{ scan_image_url(scan.result_image) }}" target="_blank" class="btn btn-sm btn-outline-info">View Bounding Boxes</a>
+                                {% else %}
+                                    <span class="text-muted small">Processing...</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if scan.compliance_report %}
+                                    <a href="{{ url_for('download_pdf', id=scan.id) }}" class="btn btn-sm btn-primary">Download PDF Report</a>
+                                {% else %}
+                                    <span class="text-muted small">N/A</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            {% if search_query %}
+                <p class="text-muted">No products found matching "<strong>{{ search_query }}</strong>".</p>
+            {% else %}
+                <p class="text-muted">No products have been scanned for your account yet.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

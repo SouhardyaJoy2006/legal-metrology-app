@@ -1,0 +1,39 @@
+# Vercel deployment requirements.
+#
+# torch/torchvision/CLIP are intentionally left out here -- they're 750MB+
+# installed, well over Vercel's serverless function size limit. This does
+# NOT change any application logic: ai_services.py already wraps the CLIP
+# import in try/except and returns {"ok": False, "error": ...} if it can't
+# be imported, so the app runs fine without it -- it just skips the
+# AI category-classification step (Gemini label extraction still works).
+#
+# For local development with full CLIP classification, use:
+#   pip install -r requirements-full.txt
+blinker==1.9.0
+Bootstrap-Flask==2.2.0
+click==8.4.2
+colorama==0.4.6
+Flask==2.3.2
+Flask-CKEditor==0.4.6
+Flask-Gravatar==0.5.0
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.1.1
+Flask-WTF==1.2.1
+greenlet==3.5.3
+gunicorn==25.1.0
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+packaging==26.2
+sqlalchemy-libsql
+python-dotenv==1.2.2
+SQLAlchemy==2.0.36
+typing_extensions==4.16.0
+Werkzeug==2.3.7
+WTForms==3.0.1
+email_validator
+google-genai
+Pillow
+requests
+vercel_blob
+fpdf

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Compliance Report — {{ scan.product_name }}</h2>
+    <div>
+        {% if scan.compliance_report %}
+            <a href="{{ url_for('download_pdf', id=scan.id) }}" class="btn btn-primary me-2">Download PDF Report</a>
+        {% endif %}
+        <a href="{{ url_for('officer_dashboard') }}" class="btn btn-outline-secondary">&larr; Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Images + summary -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase small mb-3">Product Photo</h6>
+                <img src="{{ scan_image_url(scan.product_image_filename) }}"
+                     class="img-fluid rounded mb-3" alt="Product photo">
+
+                <h6 class="text-muted text-uppercase small mb-3">Label Photo</h6>
+                <img src="{{ scan_image_url(scan.image_filename) }}"
+                     class="img-fluid rounded" alt="Label photo">
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase small mb-3">Summary</h6>
+                <p class="mb-1"><strong>Brand:</strong> {{ scan.brand }}</p>
+                <p class="mb-1"><strong>Declared category:</strong> {{ scan.category }}</p>
+                <p class="mb-1">
+                    <strong>AI-classified category:</strong>
+                    {% if scan.ai_category %}
+                        <span class="badge bg-info text-dark">{{ scan.ai_category|title }}</span>
+                    {% else %}
+                        <span class="text-muted">Not available</span>
+                    {% endif %}
+                </p>
+                <p class="mb-3">
+                    <strong>Status:</strong>
+                    {% if scan.status == 'Compliant' %}
+                        <span class="badge bg-success">{{ scan.status }}</span>
+                    {% elif scan.status == 'Non-Compliant' %}
+                        <span class="badge bg-danger">{{ scan.status }}</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">{{ scan.status }}</span>
+                    {% endif %}
+                </p>
+
+                {% if report %}
+                    {% if not report.classification.ok %}
+                        <div class="alert alert-warning py-2 px-3 small mb-2">
+                            Category classification failed: {{ report.classification.error }}
+                        </div>
+                    {% endif %}
+                    {% if not report.extraction.ok %}
+                        <div class="alert alert-warning py-2 px-3 small mb-2">
+                            Label extraction failed: {{ report.extraction.error }}
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('rerun_scan', id=scan.id) }}">
+                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                        Re-run AI Analysis
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Field-by-field compliance -->
+    <div class="col-lg-8">
+        {% if report and report.match %}
+            {% set match = report.match %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Standards: {{ match.display_name }}</h5>
+                        <span class="text-muted">{{ match.total_compliant }} / {{ match.total_required }} declarations present</span>
+                    </div>
+
+                    {% if match.notes %}
+                        <ul class="small text-muted mb-3">
+                            {% for note in match.notes %}
+                                <li>{{ note }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Declaration</th>
+                                    <th>Rule</th>
+                                    <th>Extracted Value</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in match.fields %}
+                                <tr>
+                                    <td>{{ row.label }}</td>
+                                    <td class="small text-muted">{{ row.rule }}</td>
+                                    <td>
+                                        {% if row.field in ["spacing_compliant", "language_visibility_compliant", "placement_compliant", "dimensions_declared", "color_contrast_compliant"] %}
+                                            {{ "Yes" if row.value in [1, "1", true] else "No" }}
+                                        {% else %}
+                                            {{ row.value if row.value else "—" }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.compliant %}
+                                            <span class="badge bg-success">Pass</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted mb-0">
+                        No compliance report yet. Click "Re-run AI Analysis" once the
+                        server has a valid <code>GEMINI_API_KEY</code> and the CLIP
+                        dependencies installed.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

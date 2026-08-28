@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card form-card shadow-sm mt-5 border-dark">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h4 class="mb-0">System Terminal</h4>
+            </div>
+            <div class="card-body p-4">
+                {{ render_form(form, novalidate=True) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
