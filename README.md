@@ -1,6 +1,6 @@
 # Legal Metrology App
 
-A Flask web application that helps enforcement officers and suppliers check whether packaged-product labels comply with India's Legal Metrology (Packaged Commodities) Rules, 2011 and the Cosmetics Rules, 2020. Officers upload a photo of a product and its label, and the app runs an AI pipeline to classify the product category, extract the label's declarations, and flag any missing mandatory fields.
+A Flask web application that helps enforcement officers and suppliers check whether packaged-product labels comply with India's Legal Metrology (Packaged Commodities) Rules, 2011 and the Legal Metrology Rules, 2009. Officers upload a photo of a product and its label, and the app runs an AI pipeline to classify the product category, extract the label's declarations, and flag any missing mandatory fields.
 
 ## Features
 
@@ -13,11 +13,11 @@ A Flask web application that helps enforcement officers and suppliers check whet
 
 ## Tech Stack
 
-- **Backend:** Flask, Flask-SQLAlchemy, Flask-Login, Flask-WTF
+- **Backend:** Flask, Flask-SQLAlchemy, Flask-Login, Flask-WTF, Jinja, django
 - **Database:** SQLite (local) or Turso/libSQL (Vercel)
 - **AI:** CLIP (product classification), Google Gemini (label extraction), pgvector-backed retrieval for BIS standards
 - **PDF generation:** fpdf
-- **Frontend:** Jinja2 templates with Bootstrap 5
+- **Frontend:** HTML, CSS with Bootstrap 5
 
 ## Project Structure
 
