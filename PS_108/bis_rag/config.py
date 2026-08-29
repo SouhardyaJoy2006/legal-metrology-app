@@ -37,18 +37,20 @@ class DBConfig:
     dbname: str
     user: str
     password: str
+    sslmode: str = "prefer"
 
     @property
     def dsn(self) -> str:
         return (
             f"host={self.host} port={self.port} "
-            f"dbname={self.dbname} user={self.user} password={self.password}"
+            f"dbname={self.dbname} user={self.user} password={self.password} "
+            f"sslmode={self.sslmode}"
         )
 
     @property
     def url(self) -> str:
         pw = urllib.parse.quote(self.password, safe="")
-        return f"postgresql://{self.user}:{pw}@{self.host}:{self.port}/{self.dbname}"
+        return f"postgresql://{self.user}:{pw}@{self.host}:{self.port}/{self.dbname}?sslmode={self.sslmode}"
 
 
 @dataclass(frozen=True)
@@ -66,12 +68,19 @@ class Settings:
 
 
 def _load_settings() -> Settings:
+    host = os.environ.get("POSTGRES_HOST", "localhost")
+    # Neon (and most managed Postgres hosts) require SSL. Default to "require"
+    # for known-hosted domains so migrations/connections don't silently fail
+    # or downgrade; local Postgres keeps the permissive "prefer" default.
+    # Override explicitly with POSTGRES_SSLMODE if needed.
+    default_sslmode = "require" if any(s in host for s in ("neon.tech", "vercel", "supabase.co")) else "prefer"
     db = DBConfig(
-        host=os.environ.get("POSTGRES_HOST", "localhost"),
+        host=host,
         port=int(os.environ.get("POSTGRES_PORT", "5432")),
         dbname=os.environ.get("POSTGRES_DB", "bis_rag"),
         user=os.environ.get("POSTGRES_USER", "bis_rag_user"),
         password=os.environ.get("POSTGRES_PASSWORD", ""),
+        sslmode=os.environ.get("POSTGRES_SSLMODE", default_sslmode),
     )
     app_env = os.environ.get("APP_ENV", "development").lower()
     if app_env == "production" and not db.password:

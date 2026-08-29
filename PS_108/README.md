@@ -14,7 +14,7 @@ The **BIS RAG Subsystem** is a domain-specific Retrieval-Augmented Generation (R
   - **Mechanical Engineering Department (MED)**: 1,460 standard records.
   - **Production and General Engineering Department (PGD)**: 2,674 standard records.
   - **Combined Dataset Total**: **4,134 standards**, **725 amendments**, and **15 resolved superseding parent-child relationships**.
-- **Embedding Model**: `BAAI/bge-m3` (1024-dimensional dense vector embeddings with native cross-lingual support for English and Hindi).
+- **Embedding Model**: `gemini-embedding-001` via the Gemini API (1024-dimensional dense vectors, requested via `output_dimensionality`; reuses the same `GEMINI_API_KEY` already configured for the rest of this app). A local `BAAI/bge-m3` option remains available in the model registry for GPU-equipped dev machines, but isn't practical on Vercel's serverless functions (no GPU, no persistent disk for model weights, cold-start timeouts).
 - **Vector Database**: PostgreSQL 18 with `pgvector` (`vector(1024)` extension).
 
 ---

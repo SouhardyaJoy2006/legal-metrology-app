@@ -55,6 +55,8 @@ class Embedder:
             self._load_sentence_transformers()
         elif backend == "openai":
             self._load_openai()
+        elif backend == "gemini":
+            self._load_gemini()
         else:
             raise ValueError(f"Unknown backend: {backend!r}")
 
@@ -106,6 +108,21 @@ class Embedder:
         self._model = openai.OpenAI(api_key=api_key)
         logger.info("OpenAI embedder ready. Model: %s", self.config.name)
 
+    def _load_gemini(self) -> None:
+        try:
+            from google import genai
+        except ImportError as exc:
+            raise ImportError("google-genai not installed. Run:  pip install google-genai") from exc
+
+        # Reuses the same GEMINI_API_KEY already configured for ai_services.py
+        # elsewhere in this app — no separate key needed.
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY not set in the environment.")
+
+        self._model = genai.Client(api_key=api_key)
+        logger.info("Gemini embedder ready. Model: %s (dim=%d)", self.config.name, self.config.dim)
+
     # ── Public API ────────────────────────────────────────────────────────────
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
@@ -115,7 +132,7 @@ class Embedder:
         """
         if self.config.doc_prefix:
             texts = [self.config.doc_prefix + t for t in texts]
-        return self._embed_batch(texts)
+        return self._embed_batch(texts, task_type="RETRIEVAL_DOCUMENT")
 
     def embed_query(self, text: str) -> list[float]:
         """
@@ -123,9 +140,9 @@ class Embedder:
         Always returns exactly one vector.
         """
         prefixed = self.config.query_prefix + text if self.config.query_prefix else text
-        return self._embed_batch([prefixed])[0]
+        return self._embed_batch([prefixed], task_type="RETRIEVAL_QUERY")[0]
 
-    def _embed_batch(self, texts: list[str]) -> list[list[float]]:
+    def _embed_batch(self, texts: list[str], task_type: str = "RETRIEVAL_DOCUMENT") -> list[list[float]]:
         backend = self.config.backend
         if backend == "flag_embedding":
             return self._embed_flag(texts)
@@ -133,6 +150,8 @@ class Embedder:
             return self._embed_st(texts)
         elif backend == "openai":
             return self._embed_openai(texts)
+        elif backend == "gemini":
+            return self._embed_gemini(texts, task_type=task_type)
         raise ValueError(f"Unknown backend: {backend!r}")
 
     def _embed_flag(self, texts: list[str]) -> list[list[float]]:
@@ -167,6 +186,31 @@ class Embedder:
             resp = self._model.embeddings.create(model=model_id, input=batch)
             all_vecs.extend(item.embedding for item in resp.data)
             if i + 100 < len(texts):
+                time.sleep(0.05)
+        return all_vecs
+
+    def _embed_gemini(self, texts: list[str], task_type: str = "RETRIEVAL_DOCUMENT") -> list[list[float]]:
+        """
+        Gemini embedding API backend. Requests output_dimensionality matching
+        self.config.dim (1024, to match the DB's vector(1024) columns).
+        Batches conservatively since the API accepts a list of contents per call.
+        """
+        import time
+        from google.genai import types
+
+        all_vecs: list[list[float]] = []
+        for i in range(0, len(texts), self.batch_size):
+            batch = texts[i : i + self.batch_size]
+            resp = self._model.models.embed_content(
+                model=self.config.name,
+                contents=batch,
+                config=types.EmbedContentConfig(
+                    task_type=task_type,
+                    output_dimensionality=self.config.dim,
+                ),
+            )
+            all_vecs.extend(e.values for e in resp.embeddings)
+            if i + self.batch_size < len(texts):
                 time.sleep(0.05)
         return all_vecs
 

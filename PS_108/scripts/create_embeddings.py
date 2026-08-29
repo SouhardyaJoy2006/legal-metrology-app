@@ -5,9 +5,12 @@ scripts/create_embeddings.py
 Generate and store embedding vectors for BIS standards.
 
 Model is configured via .env — no code changes needed to switch models:
-    EMBEDDING_MODEL=BAAI/bge-m3
+    EMBEDDING_MODEL=google/gemini-embedding-001   # default; reuses GEMINI_API_KEY
     EMBEDDING_DIM=1024
     EMBEDDING_BATCH_SIZE=32
+
+For local dev on a GPU box you can instead point this at a local model, e.g.:
+    EMBEDDING_MODEL=BAAI/bge-m3
 
 See bis_rag/embeddings/models.py for the full model registry.
 

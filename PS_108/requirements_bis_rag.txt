@@ -16,5 +16,9 @@ pgvector>=0.3,<1.0
 # Load environment variables from .env files
 python-dotenv>=1.0,<2.0
 
+# Gemini API client — used for embeddings (default EMBEDDING_MODEL backend).
+# Already a dependency of the main app (ai_services.py); reuses GEMINI_API_KEY.
+google-genai
+
 # Testing
 pytest>=8.0,<9.0

@@ -4,8 +4,11 @@ bis_rag.embeddings.models
 Model registry — maps model names to their configuration.
 
 The active model is selected via .env:
-    EMBEDDING_MODEL=BAAI/bge-m3
-    EMBEDDING_DIM=1024          (must match the model)
+    EMBEDDING_MODEL=google/gemini-embedding-001   (default — reuses GEMINI_API_KEY)
+    EMBEDDING_DIM=1024                            (must match the model)
+
+For local development with a GPU, you can instead point this at a local
+model such as EMBEDDING_MODEL=BAAI/bge-m3 (see registry below).
 
 Adding a new model: add an entry to MODEL_REGISTRY below.
 No code changes elsewhere needed — the embedder reads from this registry.
@@ -106,6 +109,20 @@ MODEL_REGISTRY: dict[str, ModelConfig] = {
         multilingual=True,
         backend="openai",
     ),
+    # ── Google Gemini API (paid, reuses GEMINI_API_KEY already used elsewhere
+    #    in this app for ai_services.py — no separate API key required).
+    #    output_dimensionality is requested as 1024 to match the
+    #    standard_embeddings/standard_chunks `vector(1024)` columns
+    #    (see db/migrations/009_update_embedding_dim_1024.sql) without a
+    #    new migration. Native max dimension is 3072.
+    #    Task-appropriate prefixes aren't needed here — task_type is passed
+    #    explicitly per call (RETRIEVAL_DOCUMENT / RETRIEVAL_QUERY) instead.
+    "google/gemini-embedding-001": ModelConfig(
+        name="gemini-embedding-001",
+        dim=1024,
+        multilingual=True,
+        backend="gemini",
+    ),
 }
 
 
@@ -113,9 +130,9 @@ def get_active_model() -> ModelConfig:
     """
     Return the ModelConfig for the currently configured model.
     Reads EMBEDDING_MODEL from environment (set in .env).
-    Falls back to BAAI/bge-m3 if not set.
+    Falls back to google/gemini-embedding-001 if not set.
     """
-    model_name = os.environ.get("EMBEDDING_MODEL", "BAAI/bge-m3").strip()
+    model_name = os.environ.get("EMBEDDING_MODEL", "google/gemini-embedding-001").strip()
     if model_name not in MODEL_REGISTRY:
         available = ", ".join(MODEL_REGISTRY.keys())
         raise ValueError(
