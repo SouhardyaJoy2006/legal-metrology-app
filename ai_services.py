@@ -139,7 +139,7 @@ def _classify_category_via_gemini(image_path: str, clip_error: str = "") -> dict
             '{"edible": 0.8, "electronic": 0.1, "cosmetic": 0.1}}'
         )
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite", contents=[prompt, img]
+            model="gemini-3.5-flash-lite", contents=[prompt, img]
         )
 
         raw_text = response.text.strip()
@@ -178,9 +178,9 @@ Extract and evaluate the following declarations. Return ONLY valid JSON
   "product_name": "generic/common name of the commodity",
   "manufacturer_details": "name, complete address, PIN code of manufacturer/packer/importer",
   "net_quantity": "exact net weight/volume in standard units (g, kg, ml, L, N)",
-  "mfg_pack_date": "month and year of manufacture/packing/import , add date of import if anything else is not mentioned",
-  "expiry_date": "expiry or best-before date if applicable, else empty string",
-  "mrp": "Maximum Retail Price inclusive of all taxes, exact text as printed",
+  "mfg_pack_date": "month and year of manufacture/packing/import , add date of import if anything else is not mentioned , Dont mistake date of expiry with date of Manufacturing , look for keywords 'EXP' or 'Expiry' for expiry date and 'MFG' or 'Date of MFG' or 'Manufactured' for manufacturing date",
+  "expiry_date": "expiry or best-before date if applicable, else empty string , or look for EXP keyword don't mistake it for Manufacturing date",
+  "mrp": "Maximum Retail Price inclusive of all taxes, exact MRP number should be extracted in rupee,dollar euro etc else leave it ,don't add anything else and definitely don't add texts",
   "consumer_care_details": "phone number, email, address for consumer complaints",
   "spacing_compliant": 0 or 1,
   "language_visibility_compliant": 0 or 1,
@@ -188,6 +188,8 @@ Extract and evaluate the following declarations. Return ONLY valid JSON
   "dimensions_declared": 0 or 1,
   "color_contrast_compliant": 0 or 1
 }
+
+If there is MFG and EXP label provided please be careful in calssifying which is which
 
 Rules for the boolean fields:
 - spacing_compliant: net quantity has free space around it (>= numeral height above/below, >= 2x numeral height left/right)
@@ -230,7 +232,7 @@ def extract_label_data(image_path: str) -> dict:
         img = PIL.Image.open(image_path)
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite", contents=[EXTRACTION_PROMPT, img]
+            model="gemini-3.5-flash-lite", contents=[EXTRACTION_PROMPT, img]
         )
 
         raw_text = response.text.strip()
